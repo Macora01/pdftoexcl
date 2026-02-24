@@ -140,18 +140,12 @@ function App() {
     }
   };
 
-  const downloadFile = async () => {
-    console.log('=== DOWNLOAD START ===');
-    if (!fileInfo?.id) {
-      console.log('=== NO FILE ID ===');
-      return;
-    }
+  const downloadFile = () => {
+    if (!fileInfo?.id) return;
 
     const downloadUrl = `${API}/download/${fileInfo.id}`;
-    console.log('=== DOWNLOAD URL ===', downloadUrl);
-
-    // Método directo: redirigir a la URL del API
-    // El backend ya tiene Content-Disposition: attachment
+    
+    // Redirigir a la URL del API - el backend tiene Content-Disposition: attachment
     window.location.href = downloadUrl;
     
     toast.success("Descarga iniciada", {

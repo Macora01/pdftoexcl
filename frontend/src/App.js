@@ -141,38 +141,16 @@ function App() {
     }
   };
 
-  const downloadFile = async () => {
+  const downloadFile = () => {
     if (!fileInfo?.id) return;
 
-    setIsDownloading(true);
-
-    try {
-      const response = await axios.get(`${API}/download/${fileInfo.id}`, {
-        responseType: 'blob',
-      });
-
-      // Create download link
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileInfo.originalFilename.replace('.pdf', '.xlsx'));
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Descarga completada", {
-        description: "Tu archivo Excel ha sido descargado"
-      });
-
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error("Error al descargar", {
-        description: "No se pudo descargar el archivo"
-      });
-    } finally {
-      setIsDownloading(false);
-    }
+    // Abrir en nueva ventana para activar el diálogo "Guardar como" del navegador
+    const downloadUrl = `${API}/download/${fileInfo.id}`;
+    window.open(downloadUrl, '_blank');
+    
+    toast.success("Descarga iniciada", {
+      description: "Elige la ubicación y nombre del archivo en el diálogo de tu navegador"
+    });
   };
 
   const deleteFile = async () => {

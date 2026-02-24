@@ -1,0 +1,112 @@
+{
+  "brand_identity": {
+    "name": "PDFtoExc",
+    "tone": "Artisan Utility",
+    "core_values": ["Efficiency", "Simplicity", "Warmth"],
+    "visual_mood": "Organic, tactile, structured, clean"
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Work Sans, sans-serif",
+      "body": "IBM Plex Sans, sans-serif"
+    },
+    "imports": [
+      "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=Work+Sans:wght@400;600;700&display=swap"
+    ],
+    "styles": {
+      "h1": "font-heading text-4xl md:text-5xl font-bold tracking-tight text-[var(--text-color)]",
+      "h2": "font-heading text-2xl md:text-3xl font-semibold tracking-tight text-[var(--text-color)]",
+      "body": "font-body text-base text-[var(--text-light)] leading-relaxed",
+      "caption": "font-body text-sm text-[var(--text-light)] opacity-80"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": "#5f2e0a",
+      "secondary": "#5f2e0a",
+      "accent": "#dec290",
+      "background": "#d1b684",
+      "text": "#5D4037",
+      "text-light": "#8D6E63",
+      "white": "#FFFFFF"
+    },
+    "tailwind_vars": {
+      "--background": "39 45% 67%",
+      "--foreground": "14 25% 29%",
+      "--card": "0 0% 100%",
+      "--card-foreground": "14 25% 29%",
+      "--popover": "0 0% 100%",
+      "--popover-foreground": "14 25% 29%",
+      "--primary": "25 80% 20%",
+      "--primary-foreground": "38 50% 90%",
+      "--secondary": "38 50% 71%",
+      "--secondary-foreground": "25 80% 20%",
+      "--muted": "38 30% 85%",
+      "--muted-foreground": "17 18% 49%",
+      "--accent": "38 50% 71%",
+      "--accent-foreground": "25 80% 20%",
+      "--destructive": "0 84.2% 60.2%",
+      "--destructive-foreground": "0 0% 98%",
+      "--border": "25 80% 20%",
+      "--input": "25 80% 20%",
+      "--ring": "25 80% 20%",
+      "--radius": "0.5rem"
+    }
+  },
+  "layout_strategy": {
+    "container": "min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-[hsl(var(--background))] pattern-paper",
+    "main_card": "w-full max-w-4xl bg-[hsl(var(--card))] rounded-xl shadow-2xl overflow-hidden border border-[hsl(var(--border))]/10",
+    "section_spacing": "space-y-8",
+    "grid_system": "grid grid-cols-1 md:grid-cols-12 gap-6"
+  },
+  "components": {
+    "buttons": {
+      "default": "rounded-full px-8 py-3 font-medium transition-all duration-300 active:scale-95",
+      "primary": "bg-[hsl(var(--primary))] text-white hover:bg-[hsl(var(--primary))]/90 shadow-lg hover:shadow-xl",
+      "secondary": "bg-[hsl(var(--accent))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--accent))]/80",
+      "outline": "border-2 border-[hsl(var(--primary))] text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary))] hover:text-white"
+    },
+    "inputs": {
+      "default": "rounded-lg border-2 border-[hsl(var(--input))]/20 bg-transparent px-4 py-2 text-[hsl(var(--foreground))] focus:border-[hsl(var(--primary))] focus:outline-none focus:ring-0 transition-colors"
+    },
+    "file_upload": {
+      "container": "relative border-2 border-dashed border-[hsl(var(--primary))]/40 rounded-xl p-12 text-center hover:bg-[hsl(var(--accent))]/10 transition-colors cursor-pointer group",
+      "active": "border-[hsl(var(--primary))] bg-[hsl(var(--accent))]/20",
+      "icon": "w-16 h-16 mx-auto mb-4 text-[hsl(var(--primary))]/60 group-hover:text-[hsl(var(--primary))] transition-colors"
+    },
+    "table": {
+      "wrapper": "w-full overflow-hidden rounded-lg border border-[hsl(var(--border))]/10",
+      "header": "bg-[hsl(var(--accent))]/30 text-[hsl(var(--primary))] font-semibold",
+      "row": "hover:bg-[hsl(var(--accent))]/10 transition-colors border-b border-[hsl(var(--border))]/5"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "hover_lift": "hover:-translate-y-1 hover:shadow-lg",
+    "fade_in": "animate-in fade-in zoom-in-95 duration-500"
+  },
+  "assets": {
+    "icons": "lucide-react (FileSpreadsheet, Upload, Download, Loader2, X, CheckCircle, AlertCircle)",
+    "images": {
+      "hero_bg": "Use CSS pattern or subtle noise texture if possible, otherwise solid color"
+    }
+  },
+  "universal_guidelines": [
+    "Use generous padding (p-8, p-12) to create breathing room.",
+    "Avoid default gray scales. Use the tinted brown/beige scale for all neutrals.",
+    "Ensure high contrast for text reading. Use the darkest brown for primary text.",
+    "Add a subtle noise texture to the background to enhance the 'paper' feel if possible.",
+    "Do not use gradients for the primary button, stick to solid Saddle Brown.",
+    "Center the main converter card but align text inside it left for readability.",
+    "Use 'sonner' for toast notifications with custom styling to match the earthy theme."
+  ],
+  "instructions_to_main_agent": [
+    "Update tailwind.config.js to include the custom colors and font families.",
+    "Add the Google Fonts import to index.css or index.html.",
+    "Create a 'Layout' component that wraps the page with the background color.",
+    "Use 'react-dropzone' (if available or standard input) for the file upload.",
+    "Implement the file conversion flow: Upload -> Preview (Mock/Real) -> Convert -> Download.",
+    "For the preview, if actual extraction is complex on frontend, show a mock table or metadata first.",
+    "Ensure the 'Progress' component uses the primary/accent colors."
+  ]
+}

@@ -9,10 +9,10 @@ FROM node:20-alpine AS frontend-build
 WORKDIR /app/frontend
 
 # Copy package files
-COPY frontend/package.json frontend/yarn.lock ./
+COPY frontend/package.json ./
 
 # Install dependencies
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 # Copy source code
 COPY frontend/ .

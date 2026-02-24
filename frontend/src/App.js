@@ -167,33 +167,23 @@ function App() {
       const url = window.URL.createObjectURL(blob);
       console.log('=== BLOB URL ===', url);
       
-      // Crear elemento anchor
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      
       console.log('=== TRIGGERING DOWNLOAD ===', filename);
       
-      // Método alternativo: usar MouseEvent
-      document.body.appendChild(a);
+      // Abrir el blob URL directamente - esto debería funcionar
+      const newWindow = window.open(url, '_blank');
       
-      const clickEvent = new MouseEvent('click', {
-        view: window,
-        bubbles: true,
-        cancelable: true
-      });
-      a.dispatchEvent(clickEvent);
+      if (!newWindow) {
+        // Si el popup fue bloqueado, intentar con location
+        console.log('=== POPUP BLOCKED, TRYING LOCATION ===');
+        window.location.href = url;
+      }
       
-      console.log('=== CLICK DISPATCHED ===');
+      // Limpiar después de un momento
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+      }, 5000);
       
-      // Pequeño delay antes de limpiar
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Limpiar
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      
-      console.log('=== DOWNLOAD COMPLETE ===');
+      console.log('=== DOWNLOAD TRIGGERED ===');
 
       toast.success("Descarga completada", {
         description: `Archivo: ${filename}`

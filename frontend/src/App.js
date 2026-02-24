@@ -381,6 +381,8 @@ function App() {
                   data-testid="download-link"
                   href={`${API}/download/${fileInfo.id}`}
                   download={fileInfo.originalFilename.replace('.pdf', '.xlsx')}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="btn-primary inline-flex items-center justify-center gap-2 mx-auto"
                 >
                   <Download className="w-4 h-4" />
@@ -388,7 +390,7 @@ function App() {
                 </a>
                 
                 <p className="text-xs text-muted-foreground text-center">
-                  Si no inicia la descarga, haz clic derecho → "Guardar enlace como..."
+                  Clic derecho → "Guardar enlace como..." para elegir ubicación
                 </p>
                 
                 <Button

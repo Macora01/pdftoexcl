@@ -145,19 +145,20 @@ function App() {
 
     const downloadUrl = `${API}/download/${fileInfo.id}`;
     
-    // Abrir en nueva ventana - el servidor tiene Content-Disposition: attachment
-    const newWindow = window.open(downloadUrl, '_blank');
+    // Crear formulario oculto y hacer submit
+    const form = document.createElement('form');
+    form.method = 'GET';
+    form.action = downloadUrl;
+    form.target = '_blank';
+    form.style.display = 'none';
     
-    if (newWindow) {
-      toast.success("Descarga iniciada", {
-        description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
-      });
-    } else {
-      // Si el popup fue bloqueado, mostrar enlace manual
-      toast.error("Popup bloqueado", {
-        description: "Permite popups o haz clic derecho en el botón y selecciona 'Abrir enlace en nueva pestaña'"
-      });
-    }
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+    
+    toast.success("Descarga iniciada", {
+      description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
+    });
   };
 
   const deleteFile = async () => {

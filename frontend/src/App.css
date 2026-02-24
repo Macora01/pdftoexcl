@@ -1,34 +1,142 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Main App Styles - PDF to XLSX Converter */
+
+/* File upload zone */
+.upload-zone {
+    @apply relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300;
+    border-color: rgba(95, 46, 10, 0.4);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.upload-zone:hover {
+    @apply border-primary;
+    background-color: rgba(222, 194, 144, 0.1);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
+.upload-zone.dragging {
+    @apply border-primary;
+    background-color: rgba(222, 194, 144, 0.2);
+}
+
+.upload-zone.has-file {
+    @apply border-primary bg-accent/10;
+}
+
+/* Preview table styles */
+.preview-table-wrapper {
+    @apply w-full overflow-auto rounded-lg border;
+    border-color: rgba(95, 46, 10, 0.2);
+    max-height: 400px;
+}
+
+.preview-table {
+    @apply w-full text-sm;
+}
+
+.preview-table th {
+    @apply sticky top-0 px-4 py-3 text-left font-semibold;
+    background-color: rgba(222, 194, 144, 0.3);
+    color: #5f2e0a;
+}
+
+.preview-table td {
+    @apply px-4 py-2 border-b;
+    border-color: rgba(95, 46, 10, 0.1);
+}
+
+.preview-table tr:hover td {
+    background-color: rgba(222, 194, 144, 0.1);
+}
+
+/* Status badges */
+.status-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.status-badge.pending {
+    background-color: rgba(222, 194, 144, 0.5);
+    color: #5f2e0a;
+}
+
+.status-badge.ready {
+    background-color: rgba(95, 46, 10, 0.1);
+    color: #5f2e0a;
+}
+
+.status-badge.error {
+    background-color: rgba(139, 69, 19, 0.2);
+    color: #8B4513;
+}
+
+/* Card container */
+.converter-card {
+    @apply bg-card rounded-xl shadow-2xl overflow-hidden;
+    border: 1px solid rgba(95, 46, 10, 0.1);
+}
+
+/* Button styles override */
+.btn-primary {
+    @apply rounded-full px-8 py-3 font-medium transition-all duration-300 active:scale-95;
+    background-color: #5f2e0a;
     color: white;
 }
 
-.App-link {
-    color: #61dafb;
+.btn-primary:hover {
+    background-color: rgba(95, 46, 10, 0.9);
+    box-shadow: 0 10px 25px -5px rgba(95, 46, 10, 0.3);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+.btn-secondary {
+    @apply rounded-full px-8 py-3 font-medium transition-all duration-300 active:scale-95;
+    background-color: #dec290;
+    color: #5f2e0a;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(222, 194, 144, 0.8);
+}
+
+/* Progress bar custom */
+.progress-custom {
+    @apply h-2 rounded-full overflow-hidden;
+    background-color: rgba(222, 194, 144, 0.5);
+}
+
+.progress-custom-bar {
+    @apply h-full transition-all duration-300;
+    background-color: #5f2e0a;
+}
+
+/* Animation classes */
+.animate-in {
+    animation: fade-in 0.5s ease-out;
+}
+
+/* Icon colors */
+.icon-primary {
+    color: #5f2e0a;
+}
+
+.icon-muted {
+    color: #8D6E63;
+}
+
+/* Text colors */
+.text-brand-primary {
+    color: #5D4037;
+}
+
+.text-brand-secondary {
+    color: #8D6E63;
+}
+
+/* Background utilities */
+.bg-brand-accent {
+    background-color: #dec290;
+}
+
+.bg-brand-background {
+    background-color: #d1b684;
 }

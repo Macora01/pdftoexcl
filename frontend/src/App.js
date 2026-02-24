@@ -39,7 +39,6 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewData, setPreviewData] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   const resetState = useCallback(() => {
     setFile(null);
@@ -383,20 +382,10 @@ function App() {
                 <Button
                   data-testid="download-btn"
                   onClick={downloadFile}
-                  disabled={isDownloading}
                   className="btn-primary"
                 >
-                  {isDownloading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Descargando...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Descargar Excel
-                    </>
-                  )}
+                  <Download className="w-4 h-4 mr-2" />
+                  Descargar Excel
                 </Button>
                 <Button
                   data-testid="new-file-btn"

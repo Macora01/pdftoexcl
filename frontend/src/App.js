@@ -39,6 +39,7 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewData, setPreviewData] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const resetState = useCallback(() => {
     setFile(null);
@@ -140,21 +141,38 @@ function App() {
     }
   };
 
-  const downloadFile = () => {
+  const downloadFile = async () => {
     if (!fileInfo?.id) return;
 
-    // Crear enlace temporal para descargar - activa diálogo "Guardar como"
-    const downloadUrl = `${API}/download/${fileInfo.id}`;
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    // Sin atributo download específico, el navegador usará su diálogo nativo
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success("Descarga iniciada", {
-      description: "Elige la ubicación y nombre en el diálogo de tu navegador"
-    });
+    setIsDownloading(true);
+
+    try {
+      const response = await axios.get(`${API}/download/${fileInfo.id}`, {
+        responseType: 'blob',
+      });
+
+      // Crear URL del blob y descargar
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileInfo.originalFilename.replace('.pdf', '.xlsx'));
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Descarga completada", {
+        description: "Tu archivo Excel ha sido descargado"
+      });
+
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error("Error al descargar", {
+        description: "No se pudo descargar el archivo"
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const deleteFile = async () => {
@@ -376,10 +394,20 @@ function App() {
                 <Button
                   data-testid="download-btn"
                   onClick={downloadFile}
+                  disabled={isDownloading}
                   className="btn-primary"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Descargar Excel
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Descargando...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Descargar Excel
+                    </>
+                  )}
                 </Button>
                 <Button
                   data-testid="new-file-btn"

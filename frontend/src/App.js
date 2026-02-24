@@ -142,59 +142,21 @@ function App() {
 
   const downloadFile = async () => {
     console.log('=== DOWNLOAD START ===');
-    console.log('fileInfo:', fileInfo);
     if (!fileInfo?.id) {
       console.log('=== NO FILE ID ===');
       return;
     }
 
-    const filename = fileInfo.originalFilename.replace('.pdf', '.xlsx');
     const downloadUrl = `${API}/download/${fileInfo.id}`;
     console.log('=== DOWNLOAD URL ===', downloadUrl);
 
-    try {
-      const response = await fetch(downloadUrl);
-      console.log('=== FETCH OK ===', response.status);
-      
-      if (!response.ok) {
-        throw new Error('Error en la descarga');
-      }
-
-      const blob = await response.blob();
-      console.log('=== BLOB SIZE ===', blob.size);
-      
-      // Crear URL temporal
-      const url = window.URL.createObjectURL(blob);
-      console.log('=== BLOB URL ===', url);
-      
-      console.log('=== TRIGGERING DOWNLOAD ===', filename);
-      
-      // Abrir el blob URL directamente - esto debería funcionar
-      const newWindow = window.open(url, '_blank');
-      
-      if (!newWindow) {
-        // Si el popup fue bloqueado, intentar con location
-        console.log('=== POPUP BLOCKED, TRYING LOCATION ===');
-        window.location.href = url;
-      }
-      
-      // Limpiar después de un momento
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-      }, 5000);
-      
-      console.log('=== DOWNLOAD TRIGGERED ===');
-
-      toast.success("Descarga completada", {
-        description: `Archivo: ${filename}`
-      });
-
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error("Error al descargar", {
-        description: "No se pudo descargar el archivo"
-      });
-    }
+    // Método directo: redirigir a la URL del API
+    // El backend ya tiene Content-Disposition: attachment
+    window.location.href = downloadUrl;
+    
+    toast.success("Descarga iniciada", {
+      description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
+    });
   };
 
   const deleteFile = async () => {

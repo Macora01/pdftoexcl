@@ -141,32 +141,31 @@ function App() {
   };
 
   const downloadFile = async () => {
-    console.log('downloadFile called, fileInfo:', fileInfo);
+    console.log('=== DOWNLOAD START ===');
+    console.log('fileInfo:', fileInfo);
     if (!fileInfo?.id) {
-      console.log('No fileInfo.id, returning');
+      console.log('=== NO FILE ID ===');
       return;
     }
 
     const filename = fileInfo.originalFilename.replace('.pdf', '.xlsx');
     const downloadUrl = `${API}/download/${fileInfo.id}`;
-    console.log('Downloading from:', downloadUrl);
+    console.log('=== DOWNLOAD URL ===', downloadUrl);
 
     try {
-      // Usar fetch nativo para mayor compatibilidad
-      console.log('Starting fetch...');
       const response = await fetch(downloadUrl);
-      console.log('Fetch response:', response.status, response.ok);
+      console.log('=== FETCH OK ===', response.status);
       
       if (!response.ok) {
         throw new Error('Error en la descarga');
       }
 
       const blob = await response.blob();
-      console.log('Blob created, size:', blob.size);
+      console.log('=== BLOB SIZE ===', blob.size);
       
       // Crear URL temporal
       const url = window.URL.createObjectURL(blob);
-      console.log('Blob URL created:', url);
+      console.log('=== BLOB URL ===', url);
       
       // Crear elemento anchor
       const a = document.createElement('a');

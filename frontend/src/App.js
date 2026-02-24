@@ -140,27 +140,54 @@ function App() {
     }
   };
 
-  const downloadFile = () => {
+  const downloadFile = async () => {
     if (!fileInfo?.id) return;
 
-    // Método directo: redirigir al endpoint de descarga
-    // El navegador manejará la descarga automáticamente
+    const filename = fileInfo.originalFilename.replace('.pdf', '.xlsx');
     const downloadUrl = `${API}/download/${fileInfo.id}`;
-    
-    // Usar un iframe oculto para evitar navegación
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = downloadUrl;
-    document.body.appendChild(iframe);
-    
-    // Limpiar después de 10 segundos
-    setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 10000);
 
-    toast.success("Descarga iniciada", {
-      description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
-    });
+    try {
+      // Usar fetch nativo para mayor compatibilidad
+      const response = await fetch(downloadUrl);
+      
+      if (!response.ok) {
+        throw new Error('Error en la descarga');
+      }
+
+      const blob = await response.blob();
+      
+      // Crear URL temporal
+      const url = window.URL.createObjectURL(blob);
+      
+      // Crear elemento anchor
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      
+      // Importante: agregar al body ANTES de click
+      document.body.appendChild(a);
+      
+      // Disparar click
+      a.click();
+      
+      // Pequeño delay antes de limpiar
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Limpiar
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Descarga completada", {
+        description: `Archivo: ${filename}`
+      });
+
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error("Error al descargar", {
+        description: "No se pudo descargar el archivo"
+      });
+    }
   };
 
   const deleteFile = async () => {

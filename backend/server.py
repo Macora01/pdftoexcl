@@ -264,6 +264,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve static files from frontend build
+if FRONTEND_DIR.exists():
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR / "static"), name="static")
+    
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        # Serve index.html for all non-API routes (SPA support)
+        index_file = FRONTEND_DIR / "index.html"
+        if index_file.exists():
+            return FileResponse(index_file)
+        return {"error": "Frontend not found"}
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

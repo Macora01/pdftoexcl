@@ -151,24 +151,50 @@ function App() {
         responseType: 'blob',
       });
 
-      // Crear URL del blob y descargar
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', fileInfo.originalFilename.replace('.pdf', '.xlsx'));
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      // Obtener el nombre del archivo del header o usar el original
+      const filename = fileInfo.originalFilename.replace('.pdf', '.xlsx');
+      
+      // Crear blob con tipo MIME específico
+      const blob = new Blob([response.data], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      // Método alternativo: usar msSaveOrOpenBlob para IE/Edge legacy
+      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(blob, filename);
+      } else {
+        // Crear URL del blob
+        const blobUrl = URL.createObjectURL(blob);
+        
+        // Crear enlace y forzar descarga
+        const link = document.createElement('a');
+        link.style.display = 'none';
+        link.href = blobUrl;
+        link.download = filename;
+        
+        // Agregar al DOM, hacer clic y remover
+        document.body.appendChild(link);
+        
+        // Usar setTimeout para asegurar que el enlace está en el DOM
+        setTimeout(() => {
+          link.click();
+          
+          // Limpiar después de un momento
+          setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+          }, 250);
+        }, 100);
+      }
 
       toast.success("Descarga completada", {
-        description: "Tu archivo Excel ha sido descargado"
+        description: `Archivo: ${filename}`
       });
 
     } catch (error) {
       console.error('Download error:', error);
       toast.error("Error al descargar", {
-        description: "No se pudo descargar el archivo"
+        description: "No se pudo descargar el archivo. Intenta de nuevo."
       });
     } finally {
       setIsDownloading(false);

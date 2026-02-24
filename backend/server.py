@@ -3,32 +3,28 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional, Any
+from pydantic import BaseModel, Field
+from typing import List, Any
 import uuid
 from datetime import datetime, timezone
 import pdfplumber
 from openpyxl import Workbook
 import aiofiles
-import shutil
+import json
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'pdftoexc')]
-
 # Create temp directories
 UPLOAD_DIR = ROOT_DIR / "uploads"
 OUTPUT_DIR = ROOT_DIR / "outputs"
+DATA_DIR = ROOT_DIR / "data"
 UPLOAD_DIR.mkdir(exist_ok=True)
 OUTPUT_DIR.mkdir(exist_ok=True)
+DATA_DIR.mkdir(exist_ok=True)
 
 # Frontend build path
 FRONTEND_DIR = ROOT_DIR.parent / "frontend" / "build"
@@ -40,17 +36,6 @@ app = FastAPI()
 api_router = APIRouter(prefix="/api")
 
 # Define Models
-class ConversionRecord(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    original_filename: str
-    status: str = "pending"
-    preview_data: Optional[List[List[Any]]] = None
-    total_rows: int = 0
-    total_pages: int = 0
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
 class PreviewResponse(BaseModel):
     id: str
     original_filename: str
@@ -58,11 +43,6 @@ class PreviewResponse(BaseModel):
     preview_data: List[List[Any]]
     total_rows: int
     total_pages: int
-
-class UploadResponse(BaseModel):
-    id: str
-    message: str
-    status: str
 
 # Max file size: 10MB
 MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -81,14 +61,12 @@ def extract_tables_from_pdf(pdf_path: str) -> tuple[List[List[Any]], int, int]:
             if tables:
                 for table in tables:
                     for row in table:
-                        # Clean None values and strip whitespace
                         cleaned_row = [
                             str(cell).strip() if cell is not None else ""
                             for cell in row
                         ]
                         all_rows.append(cleaned_row)
             else:
-                # If no tables, try to extract text as single column
                 text = page.extract_text()
                 if text:
                     lines = text.strip().split('\n')
@@ -108,7 +86,6 @@ def create_xlsx_from_data(data: List[List[Any]], output_path: str) -> None:
         for col_idx, cell_value in enumerate(row, 1):
             ws.cell(row=row_idx, column=col_idx, value=cell_value)
     
-    # Auto-adjust column widths
     for column_cells in ws.columns:
         max_length = 0
         column = column_cells[0].column_letter
@@ -123,6 +100,26 @@ def create_xlsx_from_data(data: List[List[Any]], output_path: str) -> None:
     
     wb.save(output_path)
 
+def save_record(file_id: str, data: dict):
+    """Save record to JSON file"""
+    file_path = DATA_DIR / f"{file_id}.json"
+    with open(file_path, 'w') as f:
+        json.dump(data, f)
+
+def load_record(file_id: str) -> dict:
+    """Load record from JSON file"""
+    file_path = DATA_DIR / f"{file_id}.json"
+    if not file_path.exists():
+        return None
+    with open(file_path, 'r') as f:
+        return json.load(f)
+
+def delete_record(file_id: str):
+    """Delete record JSON file"""
+    file_path = DATA_DIR / f"{file_id}.json"
+    if file_path.exists():
+        file_path.unlink()
+
 @api_router.get("/")
 async def root():
     return {"message": "PDF to XLSX Converter API"}
@@ -131,46 +128,36 @@ async def root():
 async def upload_pdf(file: UploadFile = File(...)):
     """Upload a PDF file and get preview data"""
     
-    # Validate file type
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Solo se permiten archivos PDF")
     
-    # Check file size
     content = await file.read()
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=400, detail="El archivo excede el límite de 10MB")
     
-    # Generate unique ID
     file_id = str(uuid.uuid4())
     
-    # Save uploaded file
     pdf_path = UPLOAD_DIR / f"{file_id}.pdf"
     async with aiofiles.open(pdf_path, 'wb') as f:
         await f.write(content)
     
     try:
-        # Extract data from PDF
         data, total_rows, total_pages = extract_tables_from_pdf(str(pdf_path))
         
         if not data:
             raise HTTPException(status_code=400, detail="No se encontraron datos en el PDF")
         
-        # Create preview (first 100 rows)
         preview_data = data[:100]
         
-        # Save record to MongoDB
-        record = ConversionRecord(
-            id=file_id,
-            original_filename=file.filename,
-            status="ready",
-            preview_data=data,  # Store all data for later conversion
-            total_rows=total_rows,
-            total_pages=total_pages
-        )
-        
-        doc = record.model_dump()
-        doc['created_at'] = doc['created_at'].isoformat()
-        await db.conversions.insert_one(doc)
+        record = {
+            "id": file_id,
+            "original_filename": file.filename,
+            "status": "ready",
+            "preview_data": data,
+            "total_rows": total_rows,
+            "total_pages": total_pages
+        }
+        save_record(file_id, record)
         
         return PreviewResponse(
             id=file_id,
@@ -191,11 +178,10 @@ async def upload_pdf(file: UploadFile = File(...)):
 async def get_preview(file_id: str):
     """Get preview data for a previously uploaded file"""
     
-    record = await db.conversions.find_one({"id": file_id}, {"_id": 0})
+    record = load_record(file_id)
     if not record:
         raise HTTPException(status_code=404, detail="Archivo no encontrado")
     
-    # Return only first 100 rows for preview
     preview_data = record.get('preview_data', [])[:100]
     
     return PreviewResponse(
@@ -211,7 +197,7 @@ async def get_preview(file_id: str):
 async def download_xlsx(file_id: str):
     """Convert and download the XLSX file"""
     
-    record = await db.conversions.find_one({"id": file_id}, {"_id": 0})
+    record = load_record(file_id)
     if not record:
         raise HTTPException(status_code=404, detail="Archivo no encontrado")
     
@@ -219,7 +205,6 @@ async def download_xlsx(file_id: str):
     if not data:
         raise HTTPException(status_code=400, detail="No hay datos para convertir")
     
-    # Create XLSX file
     xlsx_filename = record['original_filename'].rsplit('.', 1)[0] + '.xlsx'
     xlsx_path = OUTPUT_DIR / f"{file_id}.xlsx"
     
@@ -239,10 +224,8 @@ async def download_xlsx(file_id: str):
 async def delete_file(file_id: str):
     """Delete uploaded and converted files"""
     
-    # Delete from database
-    await db.conversions.delete_one({"id": file_id})
+    delete_record(file_id)
     
-    # Delete files
     pdf_path = UPLOAD_DIR / f"{file_id}.pdf"
     xlsx_path = OUTPUT_DIR / f"{file_id}.xlsx"
     
@@ -259,7 +242,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -270,7 +253,6 @@ if FRONTEND_DIR.exists():
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        # Serve index.html for all non-API routes (SPA support)
         index_file = FRONTEND_DIR / "index.html"
         if index_file.exists():
             return FileResponse(index_file)
@@ -282,7 +264,3 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()

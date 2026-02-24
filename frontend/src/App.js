@@ -144,20 +144,19 @@ function App() {
     if (!fileInfo?.id) return;
 
     const downloadUrl = `${API}/download/${fileInfo.id}`;
+    const filename = fileInfo.originalFilename.replace('.pdf', '.xlsx');
     
-    // Crear formulario oculto y hacer submit
-    const form = document.createElement('form');
-    form.method = 'GET';
-    form.action = downloadUrl;
-    form.target = '_blank';
-    form.style.display = 'none';
-    
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+    // Crear enlace y simular clic - sin _blank para evitar nueva pestaña
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = filename;  // Sugerir nombre de archivo
+    // NO usar target="_blank" - descargar en la misma ventana
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
     
     toast.success("Descarga iniciada", {
-      description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
+      description: `Archivo: ${filename}`
     });
   };
 

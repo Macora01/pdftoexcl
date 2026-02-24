@@ -141,64 +141,27 @@ function App() {
     }
   };
 
-  const downloadFile = async () => {
+  const downloadFile = () => {
     if (!fileInfo?.id) return;
 
-    setIsDownloading(true);
+    // Método directo: redirigir al endpoint de descarga
+    // El navegador manejará la descarga automáticamente
+    const downloadUrl = `${API}/download/${fileInfo.id}`;
+    
+    // Usar un iframe oculto para evitar navegación
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = downloadUrl;
+    document.body.appendChild(iframe);
+    
+    // Limpiar después de 10 segundos
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 10000);
 
-    try {
-      const response = await axios.get(`${API}/download/${fileInfo.id}`, {
-        responseType: 'blob',
-      });
-
-      // Obtener el nombre del archivo del header o usar el original
-      const filename = fileInfo.originalFilename.replace('.pdf', '.xlsx');
-      
-      // Crear blob con tipo MIME específico
-      const blob = new Blob([response.data], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-      });
-      
-      // Método alternativo: usar msSaveOrOpenBlob para IE/Edge legacy
-      if (window.navigator && window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveOrOpenBlob(blob, filename);
-      } else {
-        // Crear URL del blob
-        const blobUrl = URL.createObjectURL(blob);
-        
-        // Crear enlace y forzar descarga
-        const link = document.createElement('a');
-        link.style.display = 'none';
-        link.href = blobUrl;
-        link.download = filename;
-        
-        // Agregar al DOM, hacer clic y remover
-        document.body.appendChild(link);
-        
-        // Usar setTimeout para asegurar que el enlace está en el DOM
-        setTimeout(() => {
-          link.click();
-          
-          // Limpiar después de un momento
-          setTimeout(() => {
-            document.body.removeChild(link);
-            URL.revokeObjectURL(blobUrl);
-          }, 250);
-        }, 100);
-      }
-
-      toast.success("Descarga completada", {
-        description: `Archivo: ${filename}`
-      });
-
-    } catch (error) {
-      console.error('Download error:', error);
-      toast.error("Error al descargar", {
-        description: "No se pudo descargar el archivo. Intenta de nuevo."
-      });
-    } finally {
-      setIsDownloading(false);
-    }
+    toast.success("Descarga iniciada", {
+      description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
+    });
   };
 
   const deleteFile = async () => {

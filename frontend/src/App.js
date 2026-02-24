@@ -145,12 +145,19 @@ function App() {
 
     const downloadUrl = `${API}/download/${fileInfo.id}`;
     
-    // Redirigir a la URL del API - el backend tiene Content-Disposition: attachment
-    window.location.href = downloadUrl;
+    // Abrir en nueva ventana - el servidor tiene Content-Disposition: attachment
+    const newWindow = window.open(downloadUrl, '_blank');
     
-    toast.success("Descarga iniciada", {
-      description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
-    });
+    if (newWindow) {
+      toast.success("Descarga iniciada", {
+        description: `Archivo: ${fileInfo.originalFilename.replace('.pdf', '.xlsx')}`
+      });
+    } else {
+      // Si el popup fue bloqueado, mostrar enlace manual
+      toast.error("Popup bloqueado", {
+        description: "Permite popups o haz clic derecho en el botón y selecciona 'Abrir enlace en nueva pestaña'"
+      });
+    }
   };
 
   const deleteFile = async () => {

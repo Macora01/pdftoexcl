@@ -4,8 +4,7 @@ WORKDIR /app/frontend
 COPY frontend/package.json ./
 RUN yarn install
 COPY frontend/ .
-ARG REACT_APP_BACKEND_URL
-ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL=https://pdftoexc.facore.cloud
 RUN yarn build
 
 # Production

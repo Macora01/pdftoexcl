@@ -171,20 +171,29 @@ function App() {
       const a = document.createElement('a');
       a.href = url;
       a.download = filename;
-      a.style.display = 'none';
       
-      // Importante: agregar al body ANTES de click
+      console.log('=== TRIGGERING DOWNLOAD ===', filename);
+      
+      // Método alternativo: usar MouseEvent
       document.body.appendChild(a);
       
-      // Disparar click
-      a.click();
+      const clickEvent = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: true
+      });
+      a.dispatchEvent(clickEvent);
+      
+      console.log('=== CLICK DISPATCHED ===');
       
       // Pequeño delay antes de limpiar
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Limpiar
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
+      
+      console.log('=== DOWNLOAD COMPLETE ===');
 
       toast.success("Descarga completada", {
         description: `Archivo: ${filename}`

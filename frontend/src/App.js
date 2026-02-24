@@ -374,21 +374,28 @@ function App() {
             )}
 
             {/* Download Actions */}
-            {previewData && (
-              <div className="flex gap-3 justify-center pt-4" data-testid="download-actions">
-                <Button
-                  data-testid="download-btn"
-                  onClick={downloadFile}
-                  className="btn-primary"
+            {previewData && fileInfo && (
+              <div className="flex flex-col gap-4 pt-4" data-testid="download-actions">
+                {/* Enlace directo de descarga */}
+                <a
+                  data-testid="download-link"
+                  href={`${API}/download/${fileInfo.id}`}
+                  download={fileInfo.originalFilename.replace('.pdf', '.xlsx')}
+                  className="btn-primary inline-flex items-center justify-center gap-2 mx-auto"
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <Download className="w-4 h-4" />
                   Descargar Excel
-                </Button>
+                </a>
+                
+                <p className="text-xs text-muted-foreground text-center">
+                  Si no inicia la descarga, haz clic derecho → "Guardar enlace como..."
+                </p>
+                
                 <Button
                   data-testid="new-file-btn"
                   variant="outline"
                   onClick={deleteFile}
-                  className="btn-secondary"
+                  className="btn-secondary mx-auto"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Nuevo Archivo

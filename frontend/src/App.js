@@ -39,7 +39,6 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewData, setPreviewData] = useState(null);
   const [fileInfo, setFileInfo] = useState(null);
-  const [isDownloading, setIsDownloading] = useState(false);
 
   const resetState = useCallback(() => {
     setFile(null);

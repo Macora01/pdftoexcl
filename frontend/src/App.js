@@ -143,12 +143,17 @@ function App() {
   const downloadFile = () => {
     if (!fileInfo?.id) return;
 
-    // Abrir en nueva ventana para activar el diálogo "Guardar como" del navegador
+    // Crear enlace temporal para descargar - activa diálogo "Guardar como"
     const downloadUrl = `${API}/download/${fileInfo.id}`;
-    window.open(downloadUrl, '_blank');
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    // Sin atributo download específico, el navegador usará su diálogo nativo
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     
     toast.success("Descarga iniciada", {
-      description: "Elige la ubicación y nombre del archivo en el diálogo de tu navegador"
+      description: "Elige la ubicación y nombre en el diálogo de tu navegador"
     });
   };
 
